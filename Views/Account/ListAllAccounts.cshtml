@@ -1,0 +1,68 @@
+@model IEnumerable<HotelMS.Models.Account>
+@{
+    ViewData["Title"] = "Accounts";
+}
+
+<div class="page-header">
+    <div>
+        <h2 class="section-title"><i class="fas fa-shield-alt"></i> User Accounts</h2>
+        <p class="section-sub">Manage system access and roles</p>
+    </div>
+    <a href="/Account/CreateAccount" class="btn btn-primary">
+        <i class="fas fa-plus"></i> New Account
+    </a>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Username</th>
+                    <th>Role</th>
+                    <th>Linked Employee</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var acc in Model)
+                {
+                    <tr>
+                        <td>@acc.UserID</td>
+                        <td>
+                            <div class="user-cell">
+                                <div class="user-avatar-sm"><i class="fas fa-user"></i></div>
+                                @acc.Username
+                                @if (acc.Username == "admin") { <span class="badge badge-warning">System</span> }
+                            </div>
+                        </td>
+                        <td><span class="badge badge-role-@acc.Role.ToLower()">@acc.Role</span></td>
+                        <td>@(acc.Employee?.Name ?? "—")</td>
+                        <td>
+                            <div class="action-btns">
+                                @if (acc.Username != "admin")
+                                {
+                                    <form asp-action="DeleteAccount" asp-controller="Account" method="post" class="delete-form">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="id" value="@acc.UserID" />
+                                        <button type="submit" class="btn-icon btn-icon-danger" title="Delete">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </form>
+                                }
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+        @if (!Model.Any())
+        {
+            <div class="empty-state">
+                <i class="fas fa-users-slash"></i>
+                <p>No accounts found.</p>
+            </div>
+        }
+    </div>
+</div>

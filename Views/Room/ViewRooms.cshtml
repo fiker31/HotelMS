@@ -1,0 +1,96 @@
+@model IEnumerable<HotelMS.Models.Room>
+@{
+    ViewData["Title"] = "Rooms";
+    var role = Context.Session.GetString("UserRole") ?? "";
+}
+
+<div class="page-header">
+    <div>
+        <h2 class="section-title"><i class="fas fa-door-open"></i> Rooms</h2>
+        <p class="section-sub">@Model.Count() rooms total</p>
+    </div>
+    @if (role == "Admin" || role == "Manager")
+    {
+        <a href="/Room/AddRoom" class="btn btn-primary"><i class="fas fa-plus"></i> Add Room</a>
+    }
+</div>
+
+<!-- Filters -->
+<div class="filter-bar">
+    <form method="get" action="/Room/ViewRooms" class="filter-form">
+        <div class="filter-group">
+            <label>Type</label>
+            <select name="type" class="form-input form-select filter-select" onchange="this.form.submit()">
+                <option value="">All Types</option>
+                @foreach (var t in new[] { "Single", "Double", "Suite" })
+                {
+                    <option value="@t" @(ViewBag.FilterType == t ? "selected" : "")>@t</option>
+                }
+            </select>
+        </div>
+        <div class="filter-group">
+            <label>Status</label>
+            <select name="status" class="form-input form-select filter-select" onchange="this.form.submit()">
+                <option value="">All Status</option>
+                @foreach (var s in new[] { "Available", "Booked", "Maintenance" })
+                {
+                    <option value="@s" @(ViewBag.FilterStatus == s ? "selected" : "")>@s</option>
+                }
+            </select>
+        </div>
+        @if (!string.IsNullOrEmpty(ViewBag.FilterType?.ToString()) || !string.IsNullOrEmpty(ViewBag.FilterStatus?.ToString()))
+        {
+            <a href="/Room/ViewRooms" class="btn btn-outline btn-sm">Clear Filters</a>
+        }
+    </form>
+</div>
+
+@if (Model.Any())
+{
+    <div class="room-grid">
+        @foreach (var r in Model)
+        {
+            <div class="room-card">
+                <div class="room-card-header">
+                    <div class="room-number">@r.RoomNumber</div>
+                    <span class="badge badge-status-@r.Status.ToLower()">@r.Status</span>
+                </div>
+                <div class="room-card-body">
+                    <div class="room-type-icon">
+                        @if (r.RoomType == "Suite") { <i class="fas fa-crown"></i> }
+                        else if (r.RoomType == "Double") { <i class="fas fa-bed"></i> }
+                        else { <i class="fas fa-bed"></i> }
+                    </div>
+                    <div class="room-type">@r.RoomType</div>
+                    <div class="room-price">$@r.Price.ToString("N2")<span>/night</span></div>
+                </div>
+                @if (role == "Admin" || role == "Manager")
+                {
+                    <div class="room-card-footer">
+                        <a href="/Room/UpdateRoom/@r.RoomID" class="btn btn-outline btn-sm">
+                            <i class="fas fa-edit"></i> Edit
+                        </a>
+                        <form asp-action="DeleteRoom" asp-controller="Room" method="post" class="delete-form">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="id" value="@r.RoomID" />
+                            <button type="submit" class="btn btn-sm btn-danger-outline">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </form>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+}
+else
+{
+    <div class="empty-state card">
+        <i class="fas fa-door-closed"></i>
+        <p>No rooms found matching your filters.</p>
+        @if (role == "Admin" || role == "Manager")
+        {
+            <a href="/Room/AddRoom" class="btn btn-primary btn-sm">Add First Room</a>
+        }
+    </div>
+}

@@ -1,0 +1,22 @@
+@{
+    var role = Context.Session.GetString("UserRole") ?? "";
+    var username = Context.Session.GetString("Username") ?? "";
+}
+<header class="top-navbar">
+    <button class="hamburger" id="sidebar-toggle" aria-label="Toggle sidebar">
+        <span></span><span></span><span></span>
+    </button>
+    <div class="navbar-title">
+        <h1 class="page-title">@(ViewData["Title"] ?? "Dashboard")</h1>
+    </div>
+    <div class="navbar-right">
+        <span class="role-badge role-@role.ToLower()">@role</span>
+        <span class="nav-username"><i class="fas fa-user-circle"></i> @username</span>
+        <a href="/Account/ChangePassword" class="nav-icon-btn" title="Change Password">
+            <i class="fas fa-key"></i>
+        </a>
+        <a href="/Account/Logout" class="nav-icon-btn logout-btn" title="Logout">
+            <i class="fas fa-sign-out-alt"></i>
+        </a>
+    </div>
+</header>

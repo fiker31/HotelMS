@@ -1,0 +1,96 @@
+@model IEnumerable<HotelMS.Models.Employee>
+@{
+    ViewData["Title"] = "Employees";
+}
+
+<div class="page-header">
+    <div>
+        <h2 class="section-title"><i class="fas fa-user-tie"></i> Employees</h2>
+        <p class="section-sub">@Model.Count() staff members</p>
+    </div>
+    <a href="/Employee/AddEmployee" class="btn btn-primary"><i class="fas fa-plus"></i> Add Employee</a>
+</div>
+
+<div class="card">
+    <div class="card-toolbar">
+        <form method="get" action="/Employee/ListEmployees" class="search-form">
+            <div class="search-wrap">
+                <i class="fas fa-search search-icon"></i>
+                <input type="text" name="search" value="@ViewBag.Search" placeholder="Search by name or position..." class="search-input" />
+                <button type="submit" class="btn btn-primary btn-sm">Search</button>
+                @if (!string.IsNullOrWhiteSpace(ViewBag.Search?.ToString()))
+                {
+                    <a href="/Employee/ListEmployees" class="btn btn-outline btn-sm">Clear</a>
+                }
+            </div>
+        </form>
+    </div>
+    <div class="card-body">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Name</th>
+                    <th>Position</th>
+                    <th>Gender</th>
+                    <th>Age</th>
+                    <th>Salary</th>
+                    <th>Account</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var e in Model)
+                {
+                    <tr>
+                        <td>@e.EmployeeID</td>
+                        <td>
+                            <div class="user-cell">
+                                <div class="user-avatar-sm">@e.Name[0]</div>
+                                @e.Name
+                            </div>
+                        </td>
+                        <td><span class="badge badge-role-@e.Position.ToLower()">@e.Position</span></td>
+                        <td>@e.Gender</td>
+                        <td>@e.Age</td>
+                        <td>$@e.Salary.ToString("N2")</td>
+                        <td>
+                            @if (e.Account != null)
+                            {
+                                <span class="badge badge-success"><i class="fas fa-check"></i> @e.Account.Role</span>
+                            }
+                            else
+                            {
+                                <span class="badge badge-secondary">No Account</span>
+                            }
+                        </td>
+                        <td>
+                            <div class="action-btns">
+                                <a href="/Employee/GetEmployeeById/@e.EmployeeID" class="btn-icon btn-icon-view" title="View">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <a href="/Employee/UpdateEmployee/@e.EmployeeID" class="btn-icon btn-icon-edit" title="Edit">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <form asp-action="DeleteEmployee" asp-controller="Employee" method="post" class="delete-form">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="id" value="@e.EmployeeID" />
+                                    <button type="submit" class="btn-icon btn-icon-danger" title="Delete">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+        @if (!Model.Any())
+        {
+            <div class="empty-state">
+                <i class="fas fa-user-slash"></i>
+                <p>No employees found.</p>
+            </div>
+        }
+    </div>
+</div>

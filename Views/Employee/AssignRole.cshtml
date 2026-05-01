@@ -1,0 +1,45 @@
+@model HotelMS.Models.Employee
+@{
+    ViewData["Title"] = "Assign Role";
+}
+
+<div class="page-header">
+    <div>
+        <h2 class="section-title"><i class="fas fa-user-tag"></i> Assign Role</h2>
+        <p class="section-sub">@Model.Name — @Model.Position</p>
+    </div>
+    <a href="/Employee/GetEmployeeById/@Model.EmployeeID" class="btn btn-outline"><i class="fas fa-arrow-left"></i> Back</a>
+</div>
+
+<div class="form-card form-card-narrow">
+    <form asp-action="AssignRole" method="post">
+        @Html.AntiForgeryToken()
+        <input type="hidden" name="employeeId" value="@Model.EmployeeID" />
+        <div class="form-group">
+            <label class="form-label">Current Role</label>
+            <div class="info-box">
+                @if (Model.Account != null)
+                {
+                    <span class="badge badge-role-@Model.Account.Role.ToLower() badge-lg">@Model.Account.Role</span>
+                }
+                else
+                {
+                    <span class="badge badge-secondary">No Account</span>
+                }
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="role" class="form-label">New Role</label>
+            <select name="role" id="role" class="form-input form-select">
+                <option value="Admin">Admin</option>
+                <option value="Manager">Manager</option>
+                <option value="Receptionist">Receptionist</option>
+                <option value="Staff">Staff</option>
+            </select>
+        </div>
+        <div class="form-actions">
+            <a href="/Employee/GetEmployeeById/@Model.EmployeeID" class="btn btn-outline">Cancel</a>
+            <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Update Role</button>
+        </div>
+    </form>
+</div>

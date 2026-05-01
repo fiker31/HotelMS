@@ -1,0 +1,62 @@
+@model HotelMS.Models.ViewModels.CreateAccountViewModel
+@{
+    ViewData["Title"] = "Create Account";
+}
+
+<div class="page-header">
+    <div>
+        <h2 class="section-title"><i class="fas fa-user-plus"></i> Create Account</h2>
+        <p class="section-sub">Set up system access for an employee</p>
+    </div>
+    <a href="/Account/ListAllAccounts" class="btn btn-outline"><i class="fas fa-arrow-left"></i> Back</a>
+</div>
+
+<div class="form-card">
+    <form asp-action="CreateAccount" method="post">
+        @Html.AntiForgeryToken()
+        <div class="form-grid form-grid-2">
+            <div class="form-group">
+                <label asp-for="Username" class="form-label">Username</label>
+                <input asp-for="Username" class="form-input" placeholder="Enter username" />
+                <span asp-validation-for="Username" class="field-error"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Role" class="form-label">Role</label>
+                <select asp-for="Role" class="form-input form-select">
+                    <option value="Admin">Admin</option>
+                    <option value="Manager">Manager</option>
+                    <option value="Receptionist">Receptionist</option>
+                    <option value="Staff">Staff</option>
+                </select>
+                <span asp-validation-for="Role" class="field-error"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Password" class="form-label">Password</label>
+                <input asp-for="Password" type="password" class="form-input" placeholder="Min. 6 characters" />
+                <span asp-validation-for="Password" class="field-error"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="ConfirmPassword" class="form-label">Confirm Password</label>
+                <input asp-for="ConfirmPassword" type="password" class="form-input" placeholder="Repeat password" />
+                <span asp-validation-for="ConfirmPassword" class="field-error"></span>
+            </div>
+            <div class="form-group form-full">
+                <label asp-for="EmployeeID" class="form-label">Link to Employee (optional)</label>
+                <select asp-for="EmployeeID" class="form-input form-select">
+                    <option value="">— None —</option>
+                    @if (ViewBag.Employees != null)
+                    {
+                        foreach (var emp in (IEnumerable<HotelMS.Models.Employee>)ViewBag.Employees)
+                        {
+                            <option value="@emp.EmployeeID">@emp.Name (@emp.Position)</option>
+                        }
+                    }
+                </select>
+            </div>
+        </div>
+        <div class="form-actions">
+            <a href="/Account/ListAllAccounts" class="btn btn-outline">Cancel</a>
+            <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Create Account</button>
+        </div>
+    </form>
+</div>

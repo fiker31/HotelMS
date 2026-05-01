@@ -1,0 +1,42 @@
+@model IEnumerable<HotelMS.Models.Room>
+@{
+    ViewData["Title"] = "Available Rooms";
+}
+
+<div class="page-header">
+    <div>
+        <h2 class="section-title"><i class="fas fa-check-circle"></i> Available Rooms</h2>
+        <p class="section-sub">@Model.Count() rooms ready for booking</p>
+    </div>
+    <a href="/Reservation/CreateReservation" class="btn btn-primary">
+        <i class="fas fa-plus"></i> New Reservation
+    </a>
+</div>
+
+<div class="room-grid">
+    @foreach (var r in Model)
+    {
+        <div class="room-card room-card-available">
+            <div class="room-card-header">
+                <div class="room-number">@r.RoomNumber</div>
+                <span class="badge badge-status-available">Available</span>
+            </div>
+            <div class="room-card-body">
+                <div class="room-type">@r.RoomType</div>
+                <div class="room-price">$@r.Price.ToString("N2")<span>/night</span></div>
+            </div>
+            <div class="room-card-footer">
+                <a href="/Reservation/CreateReservation?roomId=@r.RoomID" class="btn btn-primary btn-sm">
+                    <i class="fas fa-calendar-plus"></i> Book Now
+                </a>
+            </div>
+        </div>
+    }
+    @if (!Model.Any())
+    {
+        <div class="empty-state">
+            <i class="fas fa-door-closed"></i>
+            <p>No rooms are currently available.</p>
+        </div>
+    }
+</div>

@@ -1,0 +1,125 @@
+@model HotelMS.Models.ViewModels.ReservationViewModel
+@{
+    ViewData["Title"] = $"Reservation #{Model.ReservationID}";
+    var payments = ViewBag.Payments as IEnumerable<HotelMS.Models.Payment> ?? Enumerable.Empty<HotelMS.Models.Payment>();
+    var totalPaid = payments.Sum(p => p.Amount);
+    var role = Context.Session.GetString("UserRole") ?? "";
+}
+
+<div class="page-header">
+    <div>
+        <h2 class="section-title"><i class="fas fa-file-alt"></i> Reservation #@Model.ReservationID</h2>
+        <span class="badge badge-@(Model.Status == "Active" ? "success" : Model.Status == "Upcoming" ? "warning" : "secondary") badge-lg">@Model.Status</span>
+    </div>
+    <div class="action-btns">
+        @if (role != "Staff" && Model.Status != "Completed")
+        {
+            <a href="/Payment/ProcessPayment?reservationId=@Model.ReservationID" class="btn btn-primary">
+                <i class="fas fa-credit-card"></i> Process Payment
+            </a>
+        }
+        <a href="/Payment/GenerateBill?reservationId=@Model.ReservationID" class="btn btn-outline">
+            <i class="fas fa-file-invoice"></i> View Bill
+        </a>
+        <a href="/Reservation/ListAllReservations" class="btn btn-outline">
+            <i class="fas fa-arrow-left"></i> Back
+        </a>
+    </div>
+</div>
+
+<div class="detail-grid">
+    <!-- Guest Info -->
+    <div class="detail-card">
+        <div class="detail-card-header">
+            <i class="fas fa-user-circle"></i> Guest Information
+        </div>
+        <div class="detail-card-body">
+            <div class="detail-row"><span>Name</span><strong>@Model.GuestFullName</strong></div>
+            <div class="detail-row"><span>Phone</span><strong>@Model.GuestPhone</strong></div>
+            <div class="detail-row"><span>Email</span><strong>@Model.GuestEmail</strong></div>
+        </div>
+    </div>
+
+    <!-- Room Info -->
+    <div class="detail-card">
+        <div class="detail-card-header">
+            <i class="fas fa-door-open"></i> Room Information
+        </div>
+        <div class="detail-card-body">
+            <div class="detail-row"><span>Room No.</span><strong class="room-badge">@Model.RoomNumber</strong></div>
+            <div class="detail-row"><span>Type</span><strong>@Model.RoomType</strong></div>
+            <div class="detail-row"><span>Rate</span><strong>$@Model.RoomPrice.ToString("N2")/night</strong></div>
+            <div class="detail-row"><span>Handled By</span><strong>@Model.EmployeeName</strong></div>
+        </div>
+    </div>
+
+    <!-- Stay Info -->
+    <div class="detail-card">
+        <div class="detail-card-header">
+            <i class="fas fa-calendar-alt"></i> Stay Details
+        </div>
+        <div class="detail-card-body">
+            <div class="detail-row"><span>Check-In</span><strong>@Model.CheckInDate.ToString("dddd, MMM dd yyyy")</strong></div>
+            <div class="detail-row"><span>Check-Out</span><strong>@Model.CheckOutDate.ToString("dddd, MMM dd yyyy")</strong></div>
+            <div class="detail-row"><span>Duration</span><strong>@Model.TotalNights night(s)</strong></div>
+            <div class="detail-row"><span>Total Charge</span><strong class="gold-text">$@Model.TotalAmount.ToString("N2")</strong></div>
+        </div>
+    </div>
+
+    <!-- Payment Summary -->
+    <div class="detail-card">
+        <div class="detail-card-header">
+            <i class="fas fa-wallet"></i> Payment Summary
+        </div>
+        <div class="detail-card-body">
+            <div class="detail-row"><span>Total Due</span><strong>$@Model.TotalAmount.ToString("N2")</strong></div>
+            <div class="detail-row"><span>Total Paid</span><strong class="text-success">$@totalPaid.ToString("N2")</strong></div>
+            <div class="detail-row"><span>Balance Due</span>
+                <strong class="@(Model.TotalAmount - totalPaid > 0 ? "text-danger" : "text-success")">
+                    $@((Model.TotalAmount - totalPaid).ToString("N2"))
+                </strong>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Payment History -->
+<div class="card" style="margin-top:1.5rem">
+    <div class="card-header">
+        <h3><i class="fas fa-history"></i> Payment History</h3>
+        @if (role != "Staff" && Model.Status != "Completed")
+        {
+            <a href="/Payment/ProcessPayment?reservationId=@Model.ReservationID" class="btn btn-primary btn-sm">
+                <i class="fas fa-plus"></i> Add Payment
+            </a>
+        }
+    </div>
+    <div class="card-body">
+        @if (payments.Any())
+        {
+            <table class="data-table">
+                <thead>
+                    <tr><th>#</th><th>Date</th><th>Amount</th><th>Method</th></tr>
+                </thead>
+                <tbody>
+                    @foreach (var p in payments)
+                    {
+                        <tr>
+                            <td>@p.PaymentID</td>
+                            <td>@p.PaymentDate.ToString("MMM dd, yyyy HH:mm")</td>
+                            <td><strong class="text-success">$@p.Amount.ToString("N2")</strong></td>
+                            <td><span class="badge badge-info">@p.PaymentMethod</span></td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+        else
+        {
+            <div class="empty-state">
+                <i class="fas fa-file-invoice-dollar"></i>
+                <p>No payments recorded yet.</p>
+            </div>
+        }
+    </div>
+</div>

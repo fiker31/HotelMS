@@ -1,0 +1,51 @@
+@model HotelMS.Models.Room
+@{
+    ViewData["Title"] = "Add Room";
+}
+
+<div class="page-header">
+    <div>
+        <h2 class="section-title"><i class="fas fa-door-closed"></i> Add New Room</h2>
+        <p class="section-sub">Register a new hotel room</p>
+    </div>
+    <a href="/Room/ViewRooms" class="btn btn-outline"><i class="fas fa-arrow-left"></i> Back</a>
+</div>
+
+<div class="form-card">
+    <form asp-action="AddRoom" method="post">
+        @Html.AntiForgeryToken()
+        <div class="form-grid form-grid-2">
+            <div class="form-group">
+                <label asp-for="RoomNumber" class="form-label">Room Number</label>
+                <input asp-for="RoomNumber" class="form-input" placeholder="e.g. 101, 202A" />
+                <span asp-validation-for="RoomNumber" class="field-error"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="RoomType" class="form-label">Room Type</label>
+                <select asp-for="RoomType" class="form-input form-select">
+                    <option value="Single">Single</option>
+                    <option value="Double">Double</option>
+                    <option value="Suite">Suite</option>
+                </select>
+                <span asp-validation-for="RoomType" class="field-error"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Price" class="form-label">Price Per Night ($)</label>
+                <input asp-for="Price" type="number" step="0.01" min="0" class="form-input" placeholder="0.00" />
+                <span asp-validation-for="Price" class="field-error"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Status" class="form-label">Status</label>
+                <select asp-for="Status" class="form-input form-select">
+                    <option value="Available">Available</option>
+                    <option value="Booked">Booked</option>
+                    <option value="Maintenance">Maintenance</option>
+                </select>
+            </div>
+        </div>
+        <div class="form-actions">
+            <a href="/Room/ViewRooms" class="btn btn-outline">Cancel</a>
+            <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Save Room</button>
+        </div>
+    </form>
+</div>

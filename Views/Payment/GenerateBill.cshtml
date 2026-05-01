@@ -1,0 +1,107 @@
+@model HotelMS.Models.ViewModels.BillViewModel
+@{
+    ViewData["Title"] = $"Bill — Reservation #{Model.ReservationID}";
+}
+
+<div class="page-header no-print">
+    <div>
+        <h2 class="section-title"><i class="fas fa-file-invoice"></i> Invoice</h2>
+        <p class="section-sub">Reservation #@Model.ReservationID</p>
+    </div>
+    <div class="action-btns">
+        <button onclick="window.print()" class="btn btn-primary no-print">
+            <i class="fas fa-print"></i> Print Bill
+        </button>
+        <a href="/Reservation/GetReservationById/@Model.ReservationID" class="btn btn-outline no-print">
+            <i class="fas fa-arrow-left"></i> Back
+        </a>
+    </div>
+</div>
+
+<div class="bill-card">
+    <!-- Hotel Header -->
+    <div class="bill-header">
+        <div class="bill-hotel">
+            <div class="bill-logo"><i class="fas fa-hotel"></i></div>
+            <div>
+                <h1 class="bill-hotel-name">Hotel Luxe</h1>
+                <p class="bill-hotel-sub">Premium Management System</p>
+            </div>
+        </div>
+        <div class="bill-meta">
+            <div class="bill-meta-row"><span>Invoice #</span><strong>INV-@Model.ReservationID.ToString("D6")</strong></div>
+            <div class="bill-meta-row"><span>Date</span><strong>@Model.GeneratedAt.ToString("MMM dd, yyyy")</strong></div>
+            <div class="bill-meta-row"><span>Handled By</span><strong>@Model.HandledBy</strong></div>
+        </div>
+    </div>
+
+    <div class="bill-divider"></div>
+
+    <!-- Guest + Room Info -->
+    <div class="bill-info-grid">
+        <div class="bill-section">
+            <h4><i class="fas fa-user"></i> Guest</h4>
+            <p class="bill-name">@Model.GuestName</p>
+            <p>@Model.GuestPhone</p>
+            <p>@Model.GuestEmail</p>
+        </div>
+        <div class="bill-section">
+            <h4><i class="fas fa-door-open"></i> Room</h4>
+            <p class="bill-name">Room @Model.RoomNumber</p>
+            <p>@Model.RoomType</p>
+            <p>$@Model.PricePerNight.ToString("N2") / night</p>
+        </div>
+        <div class="bill-section">
+            <h4><i class="fas fa-calendar-alt"></i> Stay</h4>
+            <p><strong>Check-In:</strong> @Model.CheckInDate.ToString("MMM dd, yyyy")</p>
+            <p><strong>Check-Out:</strong> @Model.CheckOutDate.ToString("MMM dd, yyyy")</p>
+            <p><strong>Duration:</strong> @Model.TotalNights night(s)</p>
+        </div>
+    </div>
+
+    <div class="bill-divider"></div>
+
+    <!-- Charges Table -->
+    <h4 class="bill-section-title">Charges</h4>
+    <table class="bill-table">
+        <thead>
+            <tr>
+                <th>Description</th>
+                <th>Nights</th>
+                <th>Rate</th>
+                <th>Amount</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Room @Model.RoomNumber — @Model.RoomType</td>
+                <td>@Model.TotalNights</td>
+                <td>$@Model.PricePerNight.ToString("N2")</td>
+                <td>$@Model.SubTotal.ToString("N2")</td>
+            </tr>
+        </tbody>
+        <tfoot>
+            <tr class="bill-subtotal"><td colspan="3">Subtotal</td><td>$@Model.SubTotal.ToString("N2")</td></tr>
+            @foreach (var p in Model.Payments)
+            {
+                <tr class="bill-paid"><td colspan="3">Payment — @p.PaymentMethod (@p.PaymentDate.ToString("MMM dd"))</td><td>− $@p.Amount.ToString("N2")</td></tr>
+            }
+            <tr class="bill-balance @(Model.BalanceDue > 0 ? "bill-due" : "bill-clear")">
+                <td colspan="3"><strong>Balance Due</strong></td>
+                <td><strong>$@Model.BalanceDue.ToString("N2")</strong></td>
+            </tr>
+        </tfoot>
+    </table>
+
+    @if (Model.BalanceDue <= 0)
+    {
+        <div class="bill-paid-stamp">
+            <i class="fas fa-check-circle"></i> PAID IN FULL
+        </div>
+    }
+
+    <div class="bill-footer">
+        <p>Thank you for choosing Hotel Luxe. We hope to see you again!</p>
+        <p class="bill-footer-small">Generated on @Model.GeneratedAt.ToString("MMMM dd, yyyy HH:mm")</p>
+    </div>
+</div>

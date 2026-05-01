@@ -1,0 +1,84 @@
+@model HotelMS.Models.Employee
+@{
+    ViewData["Title"] = Model.Name;
+}
+
+<div class="page-header">
+    <div>
+        <h2 class="section-title"><i class="fas fa-id-badge"></i> Employee Profile</h2>
+    </div>
+    <div class="action-btns">
+        <a href="/Employee/UpdateEmployee/@Model.EmployeeID" class="btn btn-outline"><i class="fas fa-edit"></i> Edit</a>
+        <a href="/Employee/ListEmployees" class="btn btn-outline"><i class="fas fa-arrow-left"></i> Back</a>
+    </div>
+</div>
+
+<div class="detail-grid">
+    <div class="detail-card profile-card">
+        <div class="profile-avatar">@Model.Name[0]</div>
+        <h3 class="profile-name">@Model.Name</h3>
+        <span class="badge badge-role-@Model.Position.ToLower() badge-lg">@Model.Position</span>
+        <div class="detail-card-body" style="margin-top:1.5rem">
+            <div class="detail-row"><span>Gender</span><strong>@Model.Gender</strong></div>
+            <div class="detail-row"><span>Age</span><strong>@Model.Age years</strong></div>
+            <div class="detail-row"><span>Salary</span><strong class="gold-text">$@Model.Salary.ToString("N2")</strong></div>
+        </div>
+    </div>
+
+    <div class="detail-card">
+        <div class="detail-card-header"><i class="fas fa-shield-alt"></i> System Account</div>
+        <div class="detail-card-body">
+            @if (Model.Account != null)
+            {
+                <div class="detail-row"><span>Username</span><strong>@Model.Account.Username</strong></div>
+                <div class="detail-row"><span>Role</span><strong><span class="badge badge-role-@Model.Account.Role.ToLower()">@Model.Account.Role</span></strong></div>
+                <div class="detail-row">
+                    <span></span>
+                    <a href="/Employee/AssignRole/@Model.EmployeeID" class="btn btn-outline btn-sm">Change Role</a>
+                </div>
+            }
+            else
+            {
+                <div class="empty-state" style="padding:1rem">
+                    <i class="fas fa-user-slash"></i>
+                    <p>No system account linked.</p>
+                    <a href="/Account/CreateAccount" class="btn btn-primary btn-sm">Create Account</a>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<!-- Handled Reservations -->
+<div class="card" style="margin-top:1.5rem">
+    <div class="card-header">
+        <h3><i class="fas fa-calendar-check"></i> Handled Reservations</h3>
+        <span class="badge badge-info">@Model.Reservations.Count total</span>
+    </div>
+    <div class="card-body">
+        @if (Model.Reservations.Any())
+        {
+            <table class="data-table">
+                <thead>
+                    <tr><th>#</th><th>Guest</th><th>Room</th><th>Check-In</th><th>Check-Out</th></tr>
+                </thead>
+                <tbody>
+                    @foreach (var r in Model.Reservations.OrderByDescending(x => x.ReservationID))
+                    {
+                        <tr data-href="/Reservation/GetReservationById/@r.ReservationID">
+                            <td>#@r.ReservationID</td>
+                            <td>@r.Guest?.FullName</td>
+                            <td><span class="room-badge">@r.Room?.RoomNumber</span></td>
+                            <td>@r.CheckInDate.ToString("MMM dd, yyyy")</td>
+                            <td>@r.CheckOutDate.ToString("MMM dd, yyyy")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+        else
+        {
+            <div class="empty-state"><i class="fas fa-calendar-times"></i><p>No reservations handled yet.</p></div>
+        }
+    </div>
+</div>

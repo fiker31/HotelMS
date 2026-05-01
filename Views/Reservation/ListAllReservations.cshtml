@@ -1,0 +1,118 @@
+@model IEnumerable<HotelMS.Models.ViewModels.ReservationViewModel>
+@{
+    ViewData["Title"] = "Reservations";
+    var role = Context.Session.GetString("UserRole") ?? "";
+}
+
+<div class="page-header">
+    <div>
+        <h2 class="section-title"><i class="fas fa-calendar-check"></i> Reservations</h2>
+        <p class="section-sub">@Model.Count() total reservations</p>
+    </div>
+    @if (role != "Staff")
+    {
+        <a href="/Reservation/CreateReservation" class="btn btn-primary"><i class="fas fa-plus"></i> New Reservation</a>
+    }
+</div>
+
+<div class="card">
+    <div class="card-toolbar">
+        <form method="get" action="/Reservation/ListAllReservations" class="search-form">
+            <div class="search-wrap">
+                <i class="fas fa-search search-icon"></i>
+                <input type="text" name="search" value="@ViewBag.Search" placeholder="Search by guest name..." class="search-input" />
+                <input type="date" name="from" value="@ViewBag.From" class="form-input date-filter" title="From date" />
+                <input type="date" name="to" value="@ViewBag.To" class="form-input date-filter" title="To date" />
+                <button type="submit" class="btn btn-primary btn-sm">Filter</button>
+                <a href="/Reservation/ListAllReservations" class="btn btn-outline btn-sm">Clear</a>
+            </div>
+        </form>
+    </div>
+    <div class="card-body">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Guest</th>
+                    <th>Room</th>
+                    <th>Check-In</th>
+                    <th>Check-Out</th>
+                    <th>Nights</th>
+                    <th>Total</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var r in Model)
+                {
+                    <tr>
+                        <td><strong>#@r.ReservationID</strong></td>
+                        <td>@r.GuestFullName</td>
+                        <td><span class="room-badge">@r.RoomNumber</span> <small>@r.RoomType</small></td>
+                        <td>@r.CheckInDate.ToString("MMM dd, yyyy")</td>
+                        <td>@r.CheckOutDate.ToString("MMM dd, yyyy")</td>
+                        <td>@r.TotalNights</td>
+                        <td><strong>$@r.TotalAmount.ToString("N2")</strong></td>
+                        <td>
+                            <span class="badge badge-@(r.Status == "Active" ? "success" : r.Status == "Upcoming" ? "warning" : "secondary")">
+                                @r.Status
+                            </span>
+                        </td>
+                        <td>
+                            <div class="action-btns">
+                                <a href="/Reservation/GetReservationById/@r.ReservationID" class="btn-icon btn-icon-view" title="View">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                @if (role != "Staff")
+                                {
+                                    @if (r.Status == "Upcoming")
+                                    {
+                                        <form asp-action="CheckIn" asp-controller="Reservation" method="post" style="display:inline">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="id" value="@r.ReservationID" />
+                                            <button type="submit" class="btn-icon btn-icon-success" title="Check In">
+                                                <i class="fas fa-sign-in-alt"></i>
+                                            </button>
+                                        </form>
+                                    }
+                                    @if (r.Status == "Active")
+                                    {
+                                        <form asp-action="CheckOut" asp-controller="Reservation" method="post" style="display:inline">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="id" value="@r.ReservationID" />
+                                            <button type="submit" class="btn-icon btn-icon-edit" title="Check Out">
+                                                <i class="fas fa-sign-out-alt"></i>
+                                            </button>
+                                        </form>
+                                        <a href="/Payment/ProcessPayment?reservationId=@r.ReservationID" class="btn-icon btn-icon-gold" title="Process Payment">
+                                            <i class="fas fa-credit-card"></i>
+                                        </a>
+                                    }
+                                    @if (r.Status != "Completed")
+                                    {
+                                        <form asp-action="CancelReservation" asp-controller="Reservation" method="post" class="delete-form" style="display:inline">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="id" value="@r.ReservationID" />
+                                            <button type="submit" class="btn-icon btn-icon-danger" title="Cancel">
+                                                <i class="fas fa-times-circle"></i>
+                                            </button>
+                                        </form>
+                                    }
+                                }
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+        @if (!Model.Any())
+        {
+            <div class="empty-state">
+                <i class="fas fa-calendar-times"></i>
+                <p>No reservations found.</p>
+                <a href="/Reservation/CreateReservation" class="btn btn-primary btn-sm">Create First Reservation</a>
+            </div>
+        }
+    </div>
+</div>

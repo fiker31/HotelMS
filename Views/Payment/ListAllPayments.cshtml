@@ -1,0 +1,91 @@
+@model IEnumerable<HotelMS.Models.Payment>
+@{
+    ViewData["Title"] = "Payments";
+}
+
+<div class="page-header">
+    <div>
+        <h2 class="section-title"><i class="fas fa-credit-card"></i> Payments</h2>
+        <p class="section-sub">@Model.Count() transactions recorded</p>
+    </div>
+</div>
+
+<div class="stats-grid" style="grid-template-columns: repeat(2, 1fr); margin-bottom: 1.5rem">
+    <div class="stat-card" style="--card-index:0">
+        <div class="stat-icon stat-icon-green"><i class="fas fa-dollar-sign"></i></div>
+        <div class="stat-body">
+            <div class="stat-number">$@((ViewBag.TotalRevenue ?? 0m).ToString("N2"))</div>
+            <div class="stat-label">Total Revenue</div>
+        </div>
+    </div>
+    <div class="stat-card" style="--card-index:1">
+        <div class="stat-icon stat-icon-blue"><i class="fas fa-receipt"></i></div>
+        <div class="stat-body">
+            <div class="stat-number" data-count-target="@Model.Count()">0</div>
+            <div class="stat-label">Total Transactions</div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-toolbar">
+        <form method="get" action="/Payment/ListAllPayments" class="search-form">
+            <div class="search-wrap">
+                <span class="search-label">Date Range:</span>
+                <input type="date" name="from" value="@ViewBag.From" class="form-input date-filter" />
+                <input type="date" name="to" value="@ViewBag.To" class="form-input date-filter" />
+                <button type="submit" class="btn btn-primary btn-sm">Filter</button>
+                <a href="/Payment/ListAllPayments" class="btn btn-outline btn-sm">Clear</a>
+            </div>
+        </form>
+    </div>
+    <div class="card-body">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Date</th>
+                    <th>Guest</th>
+                    <th>Room</th>
+                    <th>Method</th>
+                    <th>Amount</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var p in Model)
+                {
+                    <tr>
+                        <td>@p.PaymentID</td>
+                        <td>@p.PaymentDate.ToString("MMM dd, yyyy")</td>
+                        <td>@p.Reservation?.Guest?.FullName</td>
+                        <td><span class="room-badge">@p.Reservation?.Room?.RoomNumber</span></td>
+                        <td><span class="badge badge-info">@p.PaymentMethod</span></td>
+                        <td><strong class="text-success">$@p.Amount.ToString("N2")</strong></td>
+                        <td>
+                            <a href="/Payment/GenerateBill?reservationId=@p.ReservationID" class="btn-icon btn-icon-view" title="View Bill">
+                                <i class="fas fa-file-invoice"></i>
+                            </a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+            @if (Model.Any())
+            {
+                <tfoot>
+                    <tr class="table-summary">
+                        <td colspan="5"><strong>Total</strong></td>
+                        <td colspan="2"><strong class="gold-text">$@ViewBag.TotalRevenue?.ToString("N2")</strong></td>
+                    </tr>
+                </tfoot>
+            }
+        </table>
+        @if (!Model.Any())
+        {
+            <div class="empty-state">
+                <i class="fas fa-file-invoice-dollar"></i>
+                <p>No payment records found.</p>
+            </div>
+        }
+    </div>
+</div>

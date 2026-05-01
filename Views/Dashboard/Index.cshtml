@@ -1,0 +1,194 @@
+@model HotelMS.Models.ViewModels.DashboardViewModel
+@{
+    ViewData["Title"] = "Dashboard";
+    var role = Context.Session.GetString("UserRole") ?? "";
+    var username = Context.Session.GetString("Username") ?? "";
+}
+
+<div class="dashboard-greeting">
+    <h2>Welcome back, <span class="gold-text">@username</span></h2>
+    <p>@DateTime.Now.ToString("dddd, MMMM dd yyyy") &nbsp;•&nbsp; <span class="role-badge role-@role.ToLower()">@role</span></p>
+</div>
+
+<!-- Stat Cards -->
+<div class="stats-grid">
+    <div class="stat-card" style="--card-index:0">
+        <div class="stat-icon stat-icon-blue"><i class="fas fa-users"></i></div>
+        <div class="stat-body">
+            <div class="stat-number" data-count-target="@Model.TotalGuests">0</div>
+            <div class="stat-label">Total Guests</div>
+        </div>
+        <div class="stat-trend"><i class="fas fa-arrow-up"></i> Active</div>
+    </div>
+    <div class="stat-card" style="--card-index:1">
+        <div class="stat-icon stat-icon-green"><i class="fas fa-door-open"></i></div>
+        <div class="stat-body">
+            <div class="stat-number" data-count-target="@Model.AvailableRooms">0</div>
+            <div class="stat-label">Available Rooms</div>
+        </div>
+        <div class="stat-trend">of @Model.TotalRooms total</div>
+    </div>
+    <div class="stat-card" style="--card-index:2">
+        <div class="stat-icon stat-icon-gold"><i class="fas fa-calendar-check"></i></div>
+        <div class="stat-body">
+            <div class="stat-number" data-count-target="@Model.ActiveReservations">0</div>
+            <div class="stat-label">Active Reservations</div>
+        </div>
+        <div class="stat-trend">@Model.TodayCheckIns check-ins today</div>
+    </div>
+    <div class="stat-card" style="--card-index:3">
+        <div class="stat-icon stat-icon-purple"><i class="fas fa-dollar-sign"></i></div>
+        <div class="stat-body">
+            <div class="stat-number stat-currency" data-count-target="@((int)Model.TotalRevenue)">0</div>
+            <div class="stat-label">Total Revenue</div>
+        </div>
+        <div class="stat-trend"><i class="fas fa-chart-line"></i> All time</div>
+    </div>
+</div>
+
+<!-- Occupancy + Quick Actions -->
+<div class="dashboard-mid-grid">
+    <div class="card">
+        <div class="card-header">
+            <h3><i class="fas fa-chart-pie"></i> Occupancy Rate</h3>
+        </div>
+        <div class="card-body occupancy-body">
+            <div class="occupancy-ring">
+                <svg viewBox="0 0 120 120" class="ring-svg">
+                    <circle cx="60" cy="60" r="50" class="ring-bg" />
+                    <circle cx="60" cy="60" r="50" class="ring-fill" id="occupancy-ring"
+                            style="--occupancy: @Model.OccupancyRate" />
+                </svg>
+                <div class="ring-label">
+                    <div class="ring-pct">@Model.OccupancyRate<span>%</span></div>
+                    <div class="ring-sub">Occupied</div>
+                </div>
+            </div>
+            <div class="occupancy-legend">
+                <div class="legend-item"><span class="legend-dot dot-booked"></span> Booked: @(Model.TotalRooms - Model.AvailableRooms)</div>
+                <div class="legend-item"><span class="legend-dot dot-available"></span> Available: @Model.AvailableRooms</div>
+                <div class="legend-item"><span class="legend-dot dot-total"></span> Total: @Model.TotalRooms</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h3><i class="fas fa-bolt"></i> Quick Actions</h3>
+        </div>
+        <div class="card-body">
+            <div class="quick-actions">
+                @if (role == "Admin" || role == "Manager" || role == "Receptionist")
+                {
+                    <a href="/Reservation/CreateReservation" class="quick-action-btn">
+                        <i class="fas fa-plus-circle"></i>
+                        <span>New Reservation</span>
+                    </a>
+                    <a href="/Guest/AddGuest" class="quick-action-btn">
+                        <i class="fas fa-user-plus"></i>
+                        <span>Add Guest</span>
+                    </a>
+                    <a href="/Payment/ListAllPayments" class="quick-action-btn">
+                        <i class="fas fa-file-invoice-dollar"></i>
+                        <span>Payments</span>
+                    </a>
+                }
+                @if (role == "Admin" || role == "Manager")
+                {
+                    <a href="/Room/AddRoom" class="quick-action-btn">
+                        <i class="fas fa-door-closed"></i>
+                        <span>Add Room</span>
+                    </a>
+                    <a href="/Employee/ListEmployees" class="quick-action-btn">
+                        <i class="fas fa-user-tie"></i>
+                        <span>Employees</span>
+                    </a>
+                }
+                @if (role == "Admin")
+                {
+                    <a href="/Account/CreateAccount" class="quick-action-btn">
+                        <i class="fas fa-shield-alt"></i>
+                        <span>Add Account</span>
+                    </a>
+                }
+                <a href="/Room/ViewRooms" class="quick-action-btn">
+                    <i class="fas fa-hotel"></i>
+                    <span>View Rooms</span>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Monthly Revenue Chart -->
+@if (Model.MonthlyRevenue.Any())
+{
+    <div class="card">
+        <div class="card-header">
+            <h3><i class="fas fa-chart-bar"></i> Monthly Revenue (Last 6 Months)</h3>
+        </div>
+        <div class="card-body">
+            <div class="bar-chart">
+                @{ var maxRevenue = Model.MonthlyRevenue.Max(m => m.Revenue); }
+                @foreach (var m in Model.MonthlyRevenue)
+                {
+                    var pct = maxRevenue > 0 ? (double)m.Revenue / (double)maxRevenue * 100 : 0;
+                    <div class="bar-item">
+                        <div class="bar-wrap">
+                            <div class="bar-fill" style="--bar-height:@pct.ToString("F0")%">
+                                <span class="bar-val">$@((int)m.Revenue)</span>
+                            </div>
+                        </div>
+                        <div class="bar-label">@m.Month</div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+}
+
+<!-- Recent Reservations -->
+<div class="card">
+    <div class="card-header">
+        <h3><i class="fas fa-history"></i> Recent Reservations</h3>
+        <a href="/Reservation/ListAllReservations" class="card-link">View All <i class="fas fa-arrow-right"></i></a>
+    </div>
+    <div class="card-body">
+        @if (Model.RecentReservations.Any())
+        {
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Guest</th>
+                        <th>Room</th>
+                        <th>Check-In</th>
+                        <th>Check-Out</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var r in Model.RecentReservations)
+                    {
+                        <tr data-href="/Reservation/GetReservationById/@r.ReservationID">
+                            <td>#@r.ReservationID</td>
+                            <td>@r.GuestFullName</td>
+                            <td><span class="room-badge">@r.RoomNumber</span> @r.RoomType</td>
+                            <td>@r.CheckInDate.ToString("MMM dd, yyyy")</td>
+                            <td>@r.CheckOutDate.ToString("MMM dd, yyyy")</td>
+                            <td><span class="badge badge-@(r.Status == "Active" ? "success" : r.Status == "Upcoming" ? "warning" : "secondary")">@r.Status</span></td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+        else
+        {
+            <div class="empty-state">
+                <i class="fas fa-calendar-times"></i>
+                <p>No reservations yet.</p>
+                <a href="/Reservation/CreateReservation" class="btn btn-primary btn-sm">Create First Reservation</a>
+            </div>
+        }
+    </div>
+</div>

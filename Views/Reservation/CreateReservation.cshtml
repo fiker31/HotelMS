@@ -1,0 +1,150 @@
+@model HotelMS.Models.Reservation
+@{
+    ViewData["Title"] = "New Reservation";
+    var guests = ViewBag.Guests as IEnumerable<HotelMS.Models.Guest> ?? Enumerable.Empty<HotelMS.Models.Guest>();
+    var rooms = ViewBag.Rooms as IEnumerable<HotelMS.Models.Room> ?? Enumerable.Empty<HotelMS.Models.Room>();
+}
+
+<div class="page-header">
+    <div>
+        <h2 class="section-title"><i class="fas fa-calendar-plus"></i> New Reservation</h2>
+        <p class="section-sub">Book a room for a guest</p>
+    </div>
+    <a href="/Reservation/ListAllReservations" class="btn btn-outline"><i class="fas fa-arrow-left"></i> Back</a>
+</div>
+
+<div class="reservation-layout">
+    <!-- Form Panel -->
+    <div class="form-card">
+        <form asp-action="CreateReservation" method="post" id="reservation-form">
+            @Html.AntiForgeryToken()
+            <input asp-for="EmployeeID" type="hidden" value="@ViewBag.EmployeeID" />
+
+            <div class="form-section-title"><i class="fas fa-user"></i> Guest Information</div>
+            <div class="form-group">
+                <label asp-for="GuestID" class="form-label">Select Guest</label>
+                <select asp-for="GuestID" class="form-input form-select" required>
+                    <option value="">— Choose a guest —</option>
+                    @foreach (var g in guests)
+                    {
+                        <option value="@g.GuestID">@g.FullName — @g.Phone</option>
+                    }
+                </select>
+                <span asp-validation-for="GuestID" class="field-error"></span>
+            </div>
+
+            <div class="form-section-title" style="margin-top:1.5rem"><i class="fas fa-door-open"></i> Room & Dates</div>
+            <div class="form-group">
+                <label asp-for="RoomID" class="form-label">Select Room</label>
+                <select asp-for="RoomID" class="form-input form-select" id="room-select" required>
+                    <option value="">— Choose a room —</option>
+                    @foreach (var r in rooms)
+                    {
+                        <option value="@r.RoomID" data-price="@r.Price" data-type="@r.RoomType">
+                            Room @r.RoomNumber — @r.RoomType — $@r.Price.ToString("N2")/night
+                        </option>
+                    }
+                </select>
+                <span asp-validation-for="RoomID" class="field-error"></span>
+            </div>
+
+            <div class="form-grid form-grid-2">
+                <div class="form-group">
+                    <label asp-for="CheckInDate" class="form-label">Check-In Date</label>
+                    <input asp-for="CheckInDate" type="date" class="form-input" id="checkin-date"
+                           min="@DateTime.Today.ToString("yyyy-MM-dd")" required />
+                    <span asp-validation-for="CheckInDate" class="field-error"></span>
+                </div>
+                <div class="form-group">
+                    <label asp-for="CheckOutDate" class="form-label">Check-Out Date</label>
+                    <input asp-for="CheckOutDate" type="date" class="form-input" id="checkout-date"
+                           min="@DateTime.Today.AddDays(1).ToString("yyyy-MM-dd")" required />
+                    <span asp-validation-for="CheckOutDate" class="field-error"></span>
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <a href="/Reservation/ListAllReservations" class="btn btn-outline">Cancel</a>
+                <button type="submit" class="btn btn-primary"><i class="fas fa-check-circle"></i> Confirm Reservation</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Preview Panel -->
+    <div class="reservation-preview" id="reservation-preview">
+        <div class="preview-header">
+            <i class="fas fa-receipt"></i>
+            <h3>Booking Summary</h3>
+        </div>
+        <div class="preview-body">
+            <div class="preview-row">
+                <span>Room</span>
+                <strong id="preview-room">—</strong>
+            </div>
+            <div class="preview-row">
+                <span>Type</span>
+                <strong id="preview-type">—</strong>
+            </div>
+            <div class="preview-row">
+                <span>Check-In</span>
+                <strong id="preview-checkin">—</strong>
+            </div>
+            <div class="preview-row">
+                <span>Check-Out</span>
+                <strong id="preview-checkout">—</strong>
+            </div>
+            <div class="preview-row">
+                <span>Nights</span>
+                <strong id="preview-nights">—</strong>
+            </div>
+            <div class="preview-divider"></div>
+            <div class="preview-row preview-total">
+                <span>Rate/Night</span>
+                <strong id="preview-rate">—</strong>
+            </div>
+            <div class="preview-row preview-total preview-grand">
+                <span>Total</span>
+                <strong id="preview-total" class="gold-text">—</strong>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+function updatePreview() {
+    const roomSel = document.getElementById('room-select');
+    const checkIn = document.getElementById('checkin-date').value;
+    const checkOut = document.getElementById('checkout-date').value;
+    const opt = roomSel.options[roomSel.selectedIndex];
+
+    if (opt && opt.value) {
+        document.getElementById('preview-room').textContent = opt.text.split('—')[0].trim();
+        document.getElementById('preview-type').textContent = opt.dataset.type || '—';
+        const price = parseFloat(opt.dataset.price) || 0;
+        document.getElementById('preview-rate').textContent = '$' + price.toFixed(2);
+    }
+
+    if (checkIn) document.getElementById('preview-checkin').textContent = new Date(checkIn + 'T00:00').toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'});
+    if (checkOut) document.getElementById('preview-checkout').textContent = new Date(checkOut + 'T00:00').toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'});
+
+    if (checkIn && checkOut && roomSel.value) {
+        const d1 = new Date(checkIn), d2 = new Date(checkOut);
+        const nights = Math.max(0, Math.round((d2 - d1) / 86400000));
+        const price = parseFloat(roomSel.options[roomSel.selectedIndex].dataset.price) || 0;
+        document.getElementById('preview-nights').textContent = nights;
+        document.getElementById('preview-total').textContent = '$' + (nights * price).toFixed(2);
+    }
+
+    // auto-set checkout min
+    if (checkIn) {
+        const next = new Date(checkIn); next.setDate(next.getDate() + 1);
+        document.getElementById('checkout-date').min = next.toISOString().split('T')[0];
+    }
+}
+
+document.getElementById('room-select').addEventListener('change', updatePreview);
+document.getElementById('checkin-date').addEventListener('change', updatePreview);
+document.getElementById('checkout-date').addEventListener('change', updatePreview);
+</script>
+}
