@@ -1,17 +1,5 @@
 # Hotel Luxe — Hotel Management and Reservation System
 
-**St. Mary University | Rapid Application Development Course**
-
-| Student | ID |
-|---|---|
-| Ruth Girma | RCD/2480/2016 |
-| Eyerus Mesganaw | RCD/1069/2016 |
-| Selam Yibeltal | RCD/1671/2016 |
-
-**Submitted to:** Mr. Haileyesus Tilahun
-
----
-
 ## Table of Contents
 
 1. [Project Overview](#1-project-overview)
@@ -155,6 +143,7 @@ VS Code is the code editor used to open, browse, and run this project.
 **Download:** `https://code.visualstudio.com/`
 
 Run the installer. Make sure to check:
+
 - **Add to PATH** (lets you open VS Code from the terminal)
 - **Register Code as an editor for supported file types**
 
@@ -176,6 +165,7 @@ SSMS is a free graphical tool that lets you open the database and visually inspe
 **Download:** `https://aka.ms/ssmsfullsetup`
 
 Install with all defaults. To connect after installing:
+
 - Server name: `(localdb)\MSSQLLocalDB`
 - Authentication: **Windows Authentication**
 - Click **Connect**
