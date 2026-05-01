@@ -530,5 +530,3 @@ dotnet run
 ```
 
 ---
-
-_Hotel Luxe Management System — St. Mary University, RAD Course, 2016 E.C._
